@@ -1,0 +1,55 @@
+{
+  "refined_tables" : {
+    "buckets" : {
+      "script_name" : "NB_REFINE_BUCKETS",
+      "isJobEnabled" : true,
+      "src_path" : "abfss://raw@gdmsutiladls.dfs.core.windows.net/Sharepoint/ReferenceData/GDMS_DataSources.xlsx",
+      "output_path" : "abfss://refined@gdmsutiladls.dfs.core.windows.net/util_refined_db/buckets/",
+      "dbx_db_name" : "util_refined_db",
+      "dbx_tbl_name" : "buckets"
+    },
+    "members" : {
+      "script_name" : "NB_REFINE_MEMBERS",
+      "isJobEnabled" : true,
+      "src_path" : "abfss://raw@gdmsutiladls.dfs.core.windows.net/Sharepoint/ReferenceData/GDMS_DataSources.xlsx",
+      "output_path" : "abfss://refined@gdmsutiladls.dfs.core.windows.net/util_refined_db/members/",
+      "dbx_db_name" : "util_refined_db",
+      "dbx_tbl_name" : "members"
+    },
+    "planner_codes" : {
+      "script_name" : "NB_REFINE_PLANNER_CODES",
+      "isJobEnabled" : true,
+      "src_path" : "abfss://raw@gdmsutiladls.dfs.core.windows.net/Sharepoint/ReferenceData/GDMS_DataSources.xlsx",
+      "output_path" : "abfss://refined@gdmsutiladls.dfs.core.windows.net/util_refined_db/planner_codes/",
+      "dbx_db_name" : "util_refined_db",
+      "dbx_tbl_name" : "planner_codes"
+    },
+    "roles" : {
+      "script_name" : "NB_REFINE_ROLES",
+      "isJobEnabled" : true,
+      "src_path" : "abfss://raw@gdmsutiladls.dfs.core.windows.net/Sharepoint/ReferenceData/GDMS_DataSources.xlsx",
+      "output_path" : "abfss://refined@gdmsutiladls.dfs.core.windows.net/util_refined_db/roles/",
+      "dbx_db_name" : "util_refined_db",
+      "dbx_tbl_name" : "roles"
+    },
+    "productivity_types" : {
+      "script_name" : "NB_REFINE_PRODUCTIVITY_TYPES",
+      "isJobEnabled" : true,
+      "src_path" : "abfss://raw@gdmsutiladls.dfs.core.windows.net/Sharepoint/ReferenceData/GDMS_DataSources.xlsx",
+      "output_path" : "abfss://refined@gdmsutiladls.dfs.core.windows.net/util_refined_db/productivity_types/",
+      "dbx_db_name" : "util_refined_db",
+      "dbx_tbl_name" : "productivity_types"
+    },
+    "tasks" : {
+      "script_name" : "NB_REFINE_TASKS",
+      "isJobEnabled" : true,
+      "src_path" : [
+        "abfss://raw@gdmsutiladls.dfs.core.windows.net/TaskPlanner/", 
+        "abfss://raw@gdmsutiladls.dfs.core.windows.net/Sharepoint/CxmraTasks/"
+        ],
+      "output_path" : "abfss://refined@gdmsutiladls.dfs.core.windows.net/util_refined_db/tasks/",
+      "dbx_db_name" : "util_refined_db",
+      "dbx_tbl_name" : "tasks"
+    }
+  }
+}
