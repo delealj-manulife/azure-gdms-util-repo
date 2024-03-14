@@ -12,35 +12,51 @@ from modules.common import constants, functions
 js_config = functions.func_get_config(
   str_config_path = constants.CONST_CONFIG_PATH)['refined_tables']['members']
 
-df_raw_gdms_reference_excel = ps.read_excel(js_config['src_path'], 
-  sheet_name = 'Members', 
+df_raw_gdms_reference_excel_members = ps.read_excel(js_config['src_path'], 
+  sheet_name = 'Members v2', 
   header = 0
-)
+).to_spark().createOrReplaceTempView("temp_members")
 
-# Rename the AssignedTo column
-df_raw_gdms_reference_excel = df_raw_gdms_reference_excel.rename(columns={"AssignedTo (Display Name in Teams)": "AssignedTo"})
+# Get the config for the specific table
+js_config = functions.func_get_config(
+  str_config_path = constants.CONST_CONFIG_PATH)['refined_tables']['roles']
 
-# Add audit columns
-df_raw_gdms_reference_excel['UploadDate'] = datetime.datetime.now()
-df_raw_gdms_reference_excel['UploadBy'] = 'SVC_MBPSDW'
+df_raw_gdms_reference_excel_roles = ps.read_excel(js_config['src_path'], 
+  sheet_name = 'Roles', 
+  header = 0
+).to_spark().createOrReplaceTempView("temp_roles")
 
-# Add active flag per member
-df_raw_gdms_reference_excel['IsActive'] = df_raw_gdms_reference_excel['EndDate'].map(lambda x: 1 if x == '9999-12-31' else 0)
+#curation raw to refined
+df_raw_gdms_reference_excel_members_final = spark.sql(f"""
+  SELECT 
+  current_timestamp() `UploadDate`,
+  '{constants.CONST_INGESTION_UPLOADER}' `UploadBy`
+  ,m.Office365ID
+  ,CAST(m.WorkdayID AS BIGINT) WorkdayID
+  ,m.GivenName
+  ,m.Surname
+  ,`AssignedTo (Display Name in Teams)` as AssignedTo
+  ,m.JobTitle
+  ,r.Group RoleGroup
+  ,m.ManagerName
+  ,m.Squad
+  ,CAST(m.StartDate AS DATE) StartDate
+  ,CAST(m.EndDate AS DATE) EndDate
+  ,CASE WHEN m.EndDate = '9999-12-31' THEN CAST('1' AS BIGINT) ELSE CAST('0' AS BIGINT) END AS IsActive
+    FROM temp_members m
+      JOIN temp_roles r 
+        on m.JobTitle = r.JobTitle
+""")
 
-# Convert StartDate and EndDate to date data type
-df_raw_gdms_reference_excel['StartDate'] = df_raw_gdms_reference_excel['StartDate'].map(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date()) 
-df_raw_gdms_reference_excel['EndDate'] = df_raw_gdms_reference_excel['EndDate'].map(lambda x: datetime.datetime.strptime(x, '%Y-%m-%d').date()) 
+# Output transformed dataframe
+display(df_raw_gdms_reference_excel_members_final)
+df_raw_gdms_reference_excel_members_final.printSchema()
 
 # Save the transformed dataframe to delta table
-display(df_raw_gdms_reference_excel)
-df_raw_gdms_reference_excel.to_delta(js_config['output_path'],  mode='overwrite')
-
-functions.func_create_external_delta_table(
-  spark_context = spark,
-  str_db_name = js_config['dbx_db_name'],
-  str_tbl_name = js_config['dbx_tbl_name'],
-  str_delta_path = js_config['output_path']
-)
+df_raw_gdms_reference_excel_members_final.write.option("path", f"abfss://refined@gdmsutiladls.dfs.core.windows.net/util_refined_db/members/")\
+    .mode("overwrite")\
+    .option("mergeSchema", "true")\
+    .saveAsTable(f"util_refined_db.members")
 
 # COMMAND ----------
 
